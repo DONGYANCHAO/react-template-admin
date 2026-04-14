@@ -1,8 +1,14 @@
-// import http from "@utils/request";
 import { faker } from "@faker-js/faker";
+import type { GithubIssueItem } from "@pages/TablePage/types";
 
-export async function getTable() {
-  const data = new Array(10).fill(null).map(() => ({
+export interface ApiResponse<T> {
+  data: T;
+  code: number;
+  message?: string;
+}
+
+export async function getTable(): Promise<ApiResponse<GithubIssueItem[]>> {
+  const data: GithubIssueItem[] = new Array(10).fill(null).map(() => ({
     id: faker.string.uuid(),
     number: faker.number.int(),
     title: faker.commerce.productName(),
@@ -20,5 +26,4 @@ export async function getTable() {
     data,
     code: 200,
   };
-  // return http.request({ url: "/api/data", method: "GET" });
 }

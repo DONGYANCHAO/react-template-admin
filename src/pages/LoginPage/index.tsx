@@ -16,9 +16,23 @@ import {
 } from "@ant-design/pro-components";
 import { Button, Divider, message, Space, Tabs } from "antd";
 import type { CSSProperties } from "react";
-import { useLoginStore } from "@stores/index";
+import { useLoginStore, selectSetUserInfo, UserInfo } from "@stores/index";
 
 type LoginType = "phone" | "account";
+
+interface AccountLoginForm {
+  username: string;
+  password: string;
+  autoLogin?: boolean;
+}
+
+interface PhoneLoginForm {
+  mobile: string;
+  captcha: string;
+  autoLogin?: boolean;
+}
+
+type LoginFormValues = AccountLoginForm | PhoneLoginForm;
 
 const iconStyles: CSSProperties = {
   color: "rgba(0, 0, 0, 0.2)",
@@ -27,21 +41,28 @@ const iconStyles: CSSProperties = {
   cursor: "pointer",
 };
 
-function delay(ms: number) {
+function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const Login = () => {
+const LoginPage: React.FC = () => {
   const [loginType, setLoginType] = useState<LoginType>("account");
-  const { setUserInfo } = useLoginStore();
+  const setUserInfo = useLoginStore(selectSetUserInfo);
   const navigate = useNavigate();
-  const onFinish = (values: any) => {
-    return delay(1000).then(() => {
-      message.success("登录成功🎉🎉🎉");
-      setUserInfo(values);
-      navigate("/", { replace: true });
-    });
+
+  const onFinish = async (values: LoginFormValues): Promise<void> => {
+    await delay(1000);
+    message.success("登录成功🎉🎉🎉");
+
+    const userInfo: UserInfo = {
+      id: "1",
+      username: "username" in values ? values.username : values.mobile,
+      role: "admin",
+    };
+    setUserInfo(userInfo);
+    navigate("/", { replace: true });
   };
+
   return (
     <div
       style={{
@@ -51,7 +72,7 @@ const Login = () => {
     >
       <LoginFormPage
         backgroundImageUrl="https://gw.alipayobjects.com/zos/rmsportal/FfdJeJRQWjEeGTpqgBKj.png"
-        onFinish={onFinish as any}
+        onFinish={onFinish}
         title="react-template-admin"
         subTitle="一个轻量级react后台管理系统"
         activityConfig={{
@@ -249,4 +270,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginPage;
