@@ -1,8 +1,10 @@
-import React, { lazy } from "react";
-import ErrorPage from "@components/ErrorPage";
-import LoginPage from "../layout/components/Login";
-import App, { authLoader } from "../App";
+import React, { lazy, Suspense } from "react";
+import type { RouteObject } from "react-router-dom";
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import { Spin } from "antd";
+import ErrorPage from "@components/ErrorPage";
+import App, { authLoader } from "../App";
+import { LoginPage } from "@pages/index";
 import {
   DashboardOutlined,
   EditOutlined,
@@ -11,16 +13,30 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 
-const Dashboard = lazy(() => import("../pages/Dashboard"));
-const FormPage = lazy(() => import("../pages/FormPage"));
-const TablePage = lazy(() => import("../pages/TablePage"));
-const AccountCenter = lazy(() => import("../pages/AccountPage/AccountCenter"));
-const AccountSettings = lazy(
-  () => import("../pages/AccountPage/AccountSettings")
-);
-const DetailPage = lazy(() => import("../pages/DetailPage"));
+export interface AppRouteObject extends Omit<RouteObject, "children"> {
+  title?: string;
+  icon?: React.ReactNode;
+  children?: AppRouteObject[];
+}
 
-const routes = [
+const withLazy = (
+  Component: React.LazyExoticComponent<React.FC>
+): React.ReactElement => (
+  <Suspense fallback={<Spin size="large" className="globa_spin" />}>
+    <Component />
+  </Suspense>
+);
+
+const Dashboard = lazy(() => import("@pages/Dashboard"));
+const FormPage = lazy(() => import("@pages/FormPage"));
+const TablePage = lazy(() => import("@pages/TablePage"));
+const AccountCenter = lazy(() => import("@pages/AccountPage/AccountCenter"));
+const AccountSettings = lazy(
+  () => import("@pages/AccountPage/AccountSettings")
+);
+const DetailPage = lazy(() => import("@pages/DetailPage"));
+
+const routeConfig: AppRouteObject[] = [
   {
     path: "/",
     element: <App />,
@@ -33,25 +49,25 @@ const routes = [
             index: true,
             title: "Dashboard",
             icon: <DashboardOutlined />,
-            element: <Dashboard />,
+            element: withLazy(Dashboard),
           },
           {
             path: "form",
             title: "表单页",
             icon: <EditOutlined />,
-            element: <FormPage />,
+            element: withLazy(FormPage),
           },
           {
             path: "table",
             title: "列表页",
             icon: <TableOutlined />,
-            element: <TablePage />,
+            element: withLazy(TablePage),
           },
           {
             path: "detail",
             title: "详情页",
             icon: <BarsOutlined />,
-            element: <DetailPage />,
+            element: withLazy(DetailPage),
           },
           {
             path: "account",
@@ -61,12 +77,12 @@ const routes = [
               {
                 path: "/account/center",
                 title: "个人中心",
-                element: <AccountCenter />,
+                element: withLazy(AccountCenter),
               },
               {
                 path: "/account/settings",
                 title: "个人设置",
-                element: <AccountSettings />,
+                element: withLazy(AccountSettings),
               },
             ],
           },
@@ -84,6 +100,6 @@ const routes = [
   },
 ];
 
-export { routes };
+export const routes = routeConfig;
 
 export default createBrowserRouter(routes);

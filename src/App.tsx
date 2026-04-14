@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { ConfigProvider, Spin } from "antd";
-import { useGlobalStore } from "@stores/index";
+import { useGlobalStore, selectPrimaryColor } from "@stores/index";
 import zhCN from "antd/locale/zh_CN";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";
@@ -10,12 +10,16 @@ dayjs.locale("zh-cn");
 
 const BasicLayout = lazy(() => import("./layout"));
 
-export function authLoader() {
+export interface AuthLoaderData {
+  isAdmin: boolean;
+}
+
+export function authLoader(): AuthLoaderData {
   return { isAdmin: true };
 }
 
 const App: React.FC = () => {
-  const { primaryColor } = useGlobalStore();
+  const primaryColor = useGlobalStore(selectPrimaryColor);
 
   return (
     <ConfigProvider

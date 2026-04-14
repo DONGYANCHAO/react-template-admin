@@ -1,11 +1,18 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type Info = Record<string, any> | null;
+export interface UserInfo {
+  id: string;
+  username: string;
+  avatar?: string;
+  email?: string;
+  role: "admin" | "user";
+}
 
-interface LoginState {
-  userInfo: Info;
-  setUserInfo: (info: Info) => void;
+export interface LoginState {
+  userInfo: UserInfo | null;
+  setUserInfo: (info: UserInfo | null) => void;
+  clearUserInfo: () => void;
 }
 
 const useLoginStore = create<LoginState>()(
@@ -13,11 +20,16 @@ const useLoginStore = create<LoginState>()(
     (set) => ({
       userInfo: null,
       setUserInfo: (info) => set(() => ({ userInfo: info })),
+      clearUserInfo: () => set(() => ({ userInfo: null })),
     }),
     {
       name: "userInfo",
     }
   )
 );
+
+export const selectUserInfo = (state: LoginState) => state.userInfo;
+export const selectSetUserInfo = (state: LoginState) => state.setUserInfo;
+export const selectClearUserInfo = (state: LoginState) => state.clearUserInfo;
 
 export default useLoginStore;

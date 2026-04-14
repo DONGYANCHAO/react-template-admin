@@ -1,12 +1,18 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, PersistOptions } from "zustand/middleware";
 
-interface GlobalState {
+export interface GlobalState {
   primaryColor: string;
   setColor: (color: string) => void;
 }
 
-//partialize 过滤属性，存储哪些字段到localStorage
+type GlobalPersist = PersistOptions<GlobalState>;
+
+const partialize: GlobalPersist["partialize"] = (state) =>
+  Object.fromEntries(
+    Object.entries(state).filter(([key]) => ["primaryColor"].includes(key))
+  ) as Partial<GlobalState>;
+
 const useGlobalStore = create<GlobalState>()(
   persist(
     (set) => ({
@@ -15,14 +21,12 @@ const useGlobalStore = create<GlobalState>()(
     }),
     {
       name: "primaryColor",
-      partialize: (state) =>
-        Object.fromEntries(
-          Object.entries(state).filter(([key]) =>
-            ["primaryColor"].includes(key)
-          )
-        ),
+      partialize,
     }
   )
 );
+
+export const selectPrimaryColor = (state: GlobalState) => state.primaryColor;
+export const selectSetColor = (state: GlobalState) => state.setColor;
 
 export default useGlobalStore;
