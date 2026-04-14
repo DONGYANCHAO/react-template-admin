@@ -1,6 +1,6 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense } from "react";
 import { ConfigProvider, Spin } from "antd";
-import { useGlobalStore } from "@stores/index";
+import { useGlobalStore, type AuthLoaderData } from "@stores/index";
 import zhCN from "antd/locale/zh_CN";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";
@@ -8,14 +8,14 @@ import "antd/dist/reset.css";
 
 dayjs.locale("zh-cn");
 
-const BasicLayout = lazy(() => import("./layout"));
+const BasicLayout = React.lazy(() => import("./layout"));
 
-export function authLoader() {
+export function authLoader(): AuthLoaderData {
   return { isAdmin: true };
 }
 
 const App: React.FC = () => {
-  const { primaryColor } = useGlobalStore();
+  const primaryColor = useGlobalStore((state) => state.primaryColor);
 
   return (
     <ConfigProvider
@@ -32,4 +32,5 @@ const App: React.FC = () => {
     </ConfigProvider>
   );
 };
+
 export default App;

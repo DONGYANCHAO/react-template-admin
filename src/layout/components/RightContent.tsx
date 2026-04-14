@@ -2,15 +2,18 @@ import React, { ChangeEvent } from "react";
 import { Avatar, Dropdown, MenuProps, Button, Input, Badge, Space } from "antd";
 import { SkinOutlined, BellOutlined } from "@ant-design/icons";
 import { useLoginStore, useGlobalStore } from "@stores/index";
-import { debounce } from "@utils/func";
+import { debounce } from "@utils/index";
 import styles from "../index.module.scss";
 
 const RightContent: React.FC = () => {
-  const { setUserInfo } = useLoginStore();
-  const { setColor, primaryColor } = useGlobalStore();
+  const clearUserInfo = useLoginStore((state) => state.clearUserInfo);
+  const setColor = useGlobalStore((state) => state.setColor);
+  const primaryColor = useGlobalStore((state) => state.primaryColor);
+
   const logoutHandle = () => {
-    setUserInfo(null);
+    clearUserInfo();
   };
+
   const items: MenuProps["items"] = [
     {
       key: "1",
@@ -40,7 +43,7 @@ const RightContent: React.FC = () => {
           className={styles.skin_input}
           defaultValue={primaryColor}
           onChange={debounce(changeMainColor, 500)}
-        ></Input>
+        />
       </div>
       <Dropdown menu={{ items }} placement="bottomRight">
         <Avatar

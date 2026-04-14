@@ -1,8 +1,8 @@
-// import http from "@utils/request";
 import { faker } from "@faker-js/faker";
+import type { TableItem, TableResponse } from "@pages/TablePage/types";
 
-export async function getTable() {
-  const data = new Array(10).fill(null).map(() => ({
+export async function getTable(): Promise<TableResponse> {
+  const data: TableItem[] = new Array(10).fill(null).map(() => ({
     id: faker.string.uuid(),
     number: faker.number.int(),
     title: faker.commerce.productName(),
@@ -20,5 +20,4 @@ export async function getTable() {
     data,
     code: 200,
   };
-  // return http.request({ url: "/api/data", method: "GET" });
 }
