@@ -1,19 +1,23 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { message } from "antd";
-interface IRequestOptions {
+
+export interface IRequestOptions {
   url: string;
   method: AxiosRequestConfig["method"];
   data?: AxiosRequestConfig["data"];
   params?: AxiosRequestConfig["params"];
   headers?: AxiosRequestConfig["headers"];
 }
-interface IResponse<T = any> {
+
+export interface IResponse<T = unknown> {
   code: number;
   message: string;
   data: T;
 }
+
 class HttpClient {
   private readonly instance: AxiosInstance;
+
   constructor(baseURL?: string) {
     this.instance = axios.create({ baseURL });
     this.instance.interceptors.response.use(
@@ -21,14 +25,18 @@ class HttpClient {
       this.handleErrorResponse
     );
   }
+
   private handleSuccessResponse(response: AxiosResponse): AxiosResponse {
     return response;
   }
-  private handleErrorResponse(error: any): Promise<never> {
-    message.error(error.message || "请求失败");
+
+  private handleErrorResponse(error: unknown): Promise<never> {
+    const errorMessage = error instanceof Error ? error.message : "请求失败";
+    message.error(errorMessage);
     return Promise.reject(error);
   }
-  public async request<T = any>({
+
+  public async request<T = unknown>({
     url,
     method,
     data,

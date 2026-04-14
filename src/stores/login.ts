@@ -1,18 +1,14 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-type Info = Record<string, any> | null;
-
-interface LoginState {
-  userInfo: Info;
-  setUserInfo: (info: Info) => void;
-}
+import type { LoginState } from "./types";
+import type { UserInfo } from "@/types";
 
 const useLoginStore = create<LoginState>()(
   persist(
     (set) => ({
       userInfo: null,
-      setUserInfo: (info) => set(() => ({ userInfo: info })),
+      setUserInfo: (info: UserInfo | null) => set(() => ({ userInfo: info })),
+      clearUserInfo: () => set(() => ({ userInfo: null })),
     }),
     {
       name: "userInfo",
