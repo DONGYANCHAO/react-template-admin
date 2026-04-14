@@ -16,7 +16,7 @@ import {
 } from "@ant-design/pro-components";
 import { Button, Divider, message, Space, Tabs } from "antd";
 import type { CSSProperties } from "react";
-import { useLoginStore } from "@stores/index";
+import { useLoginStore, type UserInfo } from "@stores/index";
 
 type LoginType = "phone" | "account";
 
@@ -27,21 +27,30 @@ const iconStyles: CSSProperties = {
   cursor: "pointer",
 };
 
-function delay(ms: number) {
+function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const Login = () => {
+interface LoginFormValues {
+  username?: string;
+  password?: string;
+  mobile?: string;
+  captcha?: string;
+  autoLogin?: boolean;
+}
+
+const Login: React.FC = () => {
   const [loginType, setLoginType] = useState<LoginType>("account");
-  const { setUserInfo } = useLoginStore();
+  const setUserInfo = useLoginStore((state) => state.setUserInfo);
   const navigate = useNavigate();
-  const onFinish = (values: any) => {
-    return delay(1000).then(() => {
-      message.success("登录成功🎉🎉🎉");
-      setUserInfo(values);
-      navigate("/", { replace: true });
-    });
+
+  const onFinish = async (values: LoginFormValues): Promise<void> => {
+    await delay(1000);
+    message.success("登录成功🎉🎉🎉");
+    setUserInfo(values as UserInfo);
+    navigate("/", { replace: true });
   };
+
   return (
     <div
       style={{
@@ -51,7 +60,7 @@ const Login = () => {
     >
       <LoginFormPage
         backgroundImageUrl="https://gw.alipayobjects.com/zos/rmsportal/FfdJeJRQWjEeGTpqgBKj.png"
-        onFinish={onFinish as any}
+        onFinish={onFinish}
         title="react-template-admin"
         subTitle="一个轻量级react后台管理系统"
         activityConfig={{

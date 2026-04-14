@@ -3,68 +3,69 @@ import {
   Outlet,
   useLoaderData,
   useNavigate,
-  NonIndexRouteObject,
   useLocation,
   Navigate,
 } from "react-router-dom";
 import { MenuProps } from "antd";
 import { Layout, Menu, theme, Spin } from "antd";
 import HeaderComp from "./components/Header";
-import { useLoginStore } from "@stores/index";
-import { routes } from "../config/router";
+import { useLoginStore, type AuthLoaderData } from "@stores/index";
+import { routeComponents } from "@config/router";
 import NoAuthPage from "@components/NoAuthPage";
+import type { AppRouteObject } from "@config/routeTypes";
 import "antd/dist/reset.css";
 
-type RouteType = NonIndexRouteObject & {
-  title: string;
-  icon: React.ReactElement;
-};
-
 const { Header, Content, Footer, Sider } = Layout;
+
+function hasPath(
+  route: AppRouteObject
+): route is AppRouteObject & { path: string } {
+  return "path" in route && typeof route.path === "string";
+}
+
+function hasChildren(
+  route: AppRouteObject
+): route is AppRouteObject & { children: AppRouteObject[] } {
+  return "children" in route && Array.isArray(route.children);
+}
+
+const getItems = (children: AppRouteObject[]): MenuProps["items"] => {
+  return children
+    .filter((item) => hasPath(item) && item.title)
+    .map((item) => {
+      const path = item.path as string;
+      return {
+        key: path,
+        icon: item.icon,
+        label: item.title,
+        children: hasChildren(item) ? getItems(item.children) : undefined,
+      };
+    });
+};
 
 const BasicLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { userInfo } = useLoginStore();
+  const userInfo = useLoginStore((state) => state.userInfo);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const { isAdmin } = useLoaderData() as any;
+  const { isAdmin } = useLoaderData() as AuthLoaderData;
 
-  const getItems: any = (children: RouteType[]) => {
-    return children.map((item) => {
-      return {
-        key: item.index
-          ? "/"
-          : item.path?.startsWith("/")
-          ? item.path
-          : `/${item.path}`,
-        icon: item.icon,
-        label: item.title,
-        children: item.children ? getItems(item.children) : null,
-      };
-    });
-  };
-
-  const menuItems: MenuProps["items"] = getItems(
-    routes[0].children![0].children.filter((item) => item.path !== "*")
-  );
+  const menuItems: MenuProps["items"] = getItems(routeComponents);
 
   const onMenuClick: MenuProps["onClick"] = ({ key }) => {
     navigate(key);
   };
 
   if (!userInfo) {
-    return <Navigate to="/login" replace={true} />;
+    return <Navigate to="/login" replace />;
   }
 
-  const renderOpenKeys = () => {
+  const renderOpenKeys = (): string[] => {
     const arr = pathname.split("/").slice(0, -1);
-    const result = arr.map(
-      (_, index) => "/" + arr.slice(1, index + 1).join("/")
-    );
-    return result;
+    return arr.map((_, index) => "/" + arr.slice(1, index + 1).join("/"));
   };
 
   return (
@@ -98,7 +99,6 @@ const BasicLayout: React.FC = () => {
         <Header style={{ padding: "0 10px", background: colorBgContainer }}>
           <HeaderComp />
         </Header>
-        {/* height：Header和Footer的默认高度是64 */}
         <Content
           style={{
             padding: 16,

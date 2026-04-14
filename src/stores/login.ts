@@ -1,11 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-type Info = Record<string, any> | null;
+import type { UserInfo } from "./types";
 
 interface LoginState {
-  userInfo: Info;
-  setUserInfo: (info: Info) => void;
+  userInfo: UserInfo | null;
+  setUserInfo: (info: UserInfo | null) => void;
+  clearUserInfo: () => void;
 }
 
 const useLoginStore = create<LoginState>()(
@@ -13,6 +13,7 @@ const useLoginStore = create<LoginState>()(
     (set) => ({
       userInfo: null,
       setUserInfo: (info) => set(() => ({ userInfo: info })),
+      clearUserInfo: () => set(() => ({ userInfo: null })),
     }),
     {
       name: "userInfo",
