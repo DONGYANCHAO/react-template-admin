@@ -1,26 +1,28 @@
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useMemo, useCallback } from "react";
 import {
   Outlet,
   useLoaderData,
   useNavigate,
-  NonIndexRouteObject,
   useLocation,
   Navigate,
 } from "react-router-dom";
-import { MenuProps } from "antd";
+import type { MenuProps } from "antd";
 import { Layout, Menu, theme, Spin } from "antd";
 import HeaderComp from "./components/Header";
 import { useLoginStore } from "@stores/index";
-import { routes } from "../config/router";
+import { routes } from "@config/router";
 import NoAuthPage from "@components/NoAuthPage";
+import type { AuthLoaderData, AppRouteObject } from "@/types";
 import "antd/dist/reset.css";
 
-type RouteType = NonIndexRouteObject & {
-  title: string;
-  icon: React.ReactElement;
-};
-
 const { Header, Content, Footer, Sider } = Layout;
+
+interface MenuItem {
+  key: string;
+  icon?: React.ReactNode;
+  label: string;
+  children?: MenuItem[];
+}
 
 const BasicLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -30,42 +32,48 @@ const BasicLayout: React.FC = () => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const { isAdmin } = useLoaderData() as any;
+  const { isAdmin } = useLoaderData() as AuthLoaderData;
 
-  const getItems: any = (children: RouteType[]) => {
-    return children.map((item) => {
-      return {
-        key: item.index
+  const getItems = useCallback((children: AppRouteObject[]): MenuItem[] => {
+    return children
+      .filter((item) => item.path !== "*")
+      .map((item) => {
+        const key = item.index
           ? "/"
           : item.path?.startsWith("/")
           ? item.path
-          : `/${item.path}`,
-        icon: item.icon,
-        label: item.title,
-        children: item.children ? getItems(item.children) : null,
-      };
-    });
-  };
+          : `/${item.path}`;
 
-  const menuItems: MenuProps["items"] = getItems(
-    routes[0].children![0].children.filter((item) => item.path !== "*")
-  );
+        return {
+          key,
+          icon: item.meta?.icon,
+          label: item.meta?.title || "",
+          children: item.children ? getItems(item.children) : undefined,
+        };
+      });
+  }, []);
 
-  const onMenuClick: MenuProps["onClick"] = ({ key }) => {
-    navigate(key);
-  };
+  const menuItems: MenuProps["items"] = useMemo(() => {
+    const mainRoute = routes[0];
+    if (!mainRoute?.children?.[0]?.children) return [];
+    return getItems(mainRoute.children[0].children);
+  }, [getItems]);
 
-  if (!userInfo) {
-    return <Navigate to="/login" replace={true} />;
-  }
+  const onMenuClick: MenuProps["onClick"] = useCallback((info: { key: string }) => {
+    navigate(info.key);
+  }, [navigate]);
 
-  const renderOpenKeys = () => {
+  const renderOpenKeys = useCallback((): string[] => {
     const arr = pathname.split("/").slice(0, -1);
     const result = arr.map(
       (_, index) => "/" + arr.slice(1, index + 1).join("/")
     );
-    return result;
-  };
+    return result.filter((key) => key !== "/");
+  }, [pathname]);
+
+  if (!userInfo) {
+    return <Navigate to="/login" replace={true} />;
+  }
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -98,12 +106,11 @@ const BasicLayout: React.FC = () => {
         <Header style={{ padding: "0 10px", background: colorBgContainer }}>
           <HeaderComp />
         </Header>
-        {/* height：Header和Footer的默认高度是64 */}
         <Content
           style={{
             padding: 16,
             overflow: "auto",
-            height: `calc(100vh - 128px)`,
+            height: "calc(100vh - 128px)",
           }}
         >
           {isAdmin ? (

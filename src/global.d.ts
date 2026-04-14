@@ -1,14 +1,13 @@
 declare module "*.less" {
-  const style: any;
+  const style: Record<string, string>;
   export default style;
 }
 declare module "*.scss" {
-  const style: any;
+  const style: Record<string, string>;
   export default style;
 }
 
 declare module "*.css";
-declare module "*.less";
 declare module "*.sass";
 declare module "*.svg";
 declare module "*.webp";

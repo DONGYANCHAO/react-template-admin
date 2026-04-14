@@ -17,6 +17,7 @@ import {
 import { Button, Divider, message, Space, Tabs } from "antd";
 import type { CSSProperties } from "react";
 import { useLoginStore } from "@stores/index";
+import type { UserInfo } from "@/types";
 
 type LoginType = "phone" | "account";
 
@@ -27,21 +28,22 @@ const iconStyles: CSSProperties = {
   cursor: "pointer",
 };
 
-function delay(ms: number) {
+function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const Login = () => {
+const Login: React.FC = () => {
   const [loginType, setLoginType] = useState<LoginType>("account");
   const { setUserInfo } = useLoginStore();
   const navigate = useNavigate();
-  const onFinish = (values: any) => {
-    return delay(1000).then(() => {
-      message.success("登录成功🎉🎉🎉");
-      setUserInfo(values);
-      navigate("/", { replace: true });
-    });
+
+  const onFinish = async (values: UserInfo): Promise<void> => {
+    await delay(1000);
+    message.success("登录成功🎉🎉🎉");
+    setUserInfo(values);
+    navigate("/", { replace: true });
   };
+
   return (
     <div
       style={{
@@ -51,7 +53,7 @@ const Login = () => {
     >
       <LoginFormPage
         backgroundImageUrl="https://gw.alipayobjects.com/zos/rmsportal/FfdJeJRQWjEeGTpqgBKj.png"
-        onFinish={onFinish as any}
+        onFinish={onFinish}
         title="react-template-admin"
         subTitle="一个轻量级react后台管理系统"
         activityConfig={{
@@ -145,8 +147,8 @@ const Login = () => {
           activeKey={loginType}
           onChange={(activeKey) => setLoginType(activeKey as LoginType)}
         >
-          <Tabs.TabPane key={"account"} tab={"账号密码登录"} />
-          <Tabs.TabPane key={"phone"} tab={"手机号登录"} />
+          <Tabs.TabPane key="account" tab="账号密码登录" />
+          <Tabs.TabPane key="phone" tab="手机号登录" />
         </Tabs>
         {loginType === "account" && (
           <>
@@ -154,9 +156,9 @@ const Login = () => {
               name="username"
               fieldProps={{
                 size: "large",
-                prefix: <UserOutlined className={"prefixIcon"} />,
+                prefix: <UserOutlined className="prefixIcon" />,
               }}
-              placeholder={"用户名: admin or user"}
+              placeholder="用户名: admin or user"
               rules={[
                 {
                   required: true,
@@ -168,9 +170,9 @@ const Login = () => {
               name="password"
               fieldProps={{
                 size: "large",
-                prefix: <LockOutlined className={"prefixIcon"} />,
+                prefix: <LockOutlined className="prefixIcon" />,
               }}
-              placeholder={"密码: 123456"}
+              placeholder="密码: 123456"
               rules={[
                 {
                   required: true,
@@ -185,10 +187,10 @@ const Login = () => {
             <ProFormText
               fieldProps={{
                 size: "large",
-                prefix: <MobileOutlined className={"prefixIcon"} />,
+                prefix: <MobileOutlined className="prefixIcon" />,
               }}
               name="mobile"
-              placeholder={"手机号"}
+              placeholder="手机号"
               rules={[
                 {
                   required: true,
@@ -203,12 +205,12 @@ const Login = () => {
             <ProFormCaptcha
               fieldProps={{
                 size: "large",
-                prefix: <LockOutlined className={"prefixIcon"} />,
+                prefix: <LockOutlined className="prefixIcon" />,
               }}
               captchaProps={{
                 size: "large",
               }}
-              placeholder={"请输入验证码"}
+              placeholder="请输入验证码"
               captchaTextRender={(timing, count) => {
                 if (timing) {
                   return `${count} ${"获取验证码"}`;

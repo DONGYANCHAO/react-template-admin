@@ -1,26 +1,18 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { GlobalState } from "./types";
 
-interface GlobalState {
-  primaryColor: string;
-  setColor: (color: string) => void;
-}
-
-//partialize 过滤属性，存储哪些字段到localStorage
 const useGlobalStore = create<GlobalState>()(
   persist(
     (set) => ({
       primaryColor: "#247fff",
-      setColor: (color) => set(() => ({ primaryColor: color })),
+      setColor: (color: string) => set(() => ({ primaryColor: color })),
     }),
     {
       name: "primaryColor",
-      partialize: (state) =>
-        Object.fromEntries(
-          Object.entries(state).filter(([key]) =>
-            ["primaryColor"].includes(key)
-          )
-        ),
+      partialize: (state: GlobalState): Pick<GlobalState, "primaryColor"> => ({
+        primaryColor: state.primaryColor,
+      }),
     }
   )
 );

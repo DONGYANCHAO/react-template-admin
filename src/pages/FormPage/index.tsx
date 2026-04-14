@@ -22,6 +22,23 @@ interface DataNodeType {
   children?: DataNodeType[];
 }
 
+interface FormValues {
+  email?: string;
+  password?: string;
+  confirm?: string;
+  nickname?: string;
+  residence?: string[];
+  phone?: string;
+  donation?: number;
+  website?: string;
+  intro?: string;
+  gender?: string;
+  captcha?: string;
+  agreement?: boolean;
+  prefix?: string;
+  suffix?: string;
+}
+
 const residences: CascaderProps<DataNodeType>["options"] = [
   {
     value: "zhejiang",
@@ -84,7 +101,7 @@ const tailFormItemLayout = {
 const FormPage: React.FC = () => {
   const [form] = Form.useForm();
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: FormValues): void => {
     console.log("Received values of form: ", values);
   };
 
@@ -108,7 +125,7 @@ const FormPage: React.FC = () => {
 
   const [autoCompleteResult, setAutoCompleteResult] = useState<string[]>([]);
 
-  const onWebsiteChange = (value: string) => {
+  const onWebsiteChange = (value: string): void => {
     if (!value) {
       setAutoCompleteResult([]);
     } else {
